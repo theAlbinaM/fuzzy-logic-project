@@ -1,0 +1,36 @@
+FUNCTION_BLOCK roseBouquet
+VAR_INPUT
+    temperature : REAL;
+    airHumidity : REAL;
+    sunlightBrightness : REAL;
+    waterChangeFrequency : REAL;
+END_VAR
+VAR_OUTPUT
+    bouquetFreshnessDuration : REAL;
+END_VAR
+FUZZIFY temperature
+    TERM low := gbell 3 5.5 5.5;
+    TERM average := gbell 3.5 6 15.5;
+    TERM high := gbell 3 6 25;
+END_FUZZIFY
+FUZZIFY airHumidity
+    TERM low := gbell 20 15 25;
+    TERM average := gbell 15 17.5 62.5;
+    TERM high := gbell 10 12.5 87.5;
+END_FUZZIFY
+FUZZIFY sunlightBrightness
+    TERM darkness := gbell 0.5 2 2;
+    TERM scatteredSunlight := gbell 0.5 2 5;
+    TERM directSunlight := gbell 0.5 2 8;
+END_FUZZIFY
+FUZZIFY waterChangeFrequency
+    TERM rare := gbell 0.5 3 1.5;
+    TERM average := gbell 0.5 3 4;
+    TERM often := gbell 0.5 4.5 6;
+END_FUZZIFY
+DEFUZZIFY bouquetFreshnessDuration
+   TERM short := gbell 1.5 3.5 3.5;
+    TERM average := gbell 3 5.5 10.5;
+    TERM long := gbell 1.5 3.5 17.5;
+END_DEFUZZIFY
+END_FUNCTION_BLOCK

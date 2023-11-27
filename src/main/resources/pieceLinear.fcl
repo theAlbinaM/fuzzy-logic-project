@@ -1,0 +1,129 @@
+FUNCTION_BLOCK roseBouquet
+
+VAR_INPUT
+    temperature : REAL;
+    airHumidity : REAL;
+    sunlightBrightness : REAL;
+    waterChangeFrequency : REAL;
+END_VAR
+
+VAR_OUTPUT
+    bouquetFreshnessDuration : REAL;
+END_VAR
+
+FUZZIFY temperature
+    TERM low := (0, 1) (5, 1) (11, 0);
+    TERM average := (9, 0) (12,1) (16,1) (22,0);
+    TERM high := (20, 0) (26, 1) (30, 1);
+END_FUZZIFY
+
+FUZZIFY airHumidity
+    TERM low := (0, 1) (30, 1) (50, 0);
+    TERM average := (45, 0) (50,1) (65,1) (80,0);
+    TERM high := (75, 0) (90, 1) (100, 1) ;
+END_FUZZIFY
+
+FUZZIFY sunlightBrightness
+    TERM darkness := (0, 1) (2, 1) (4, 0);
+    TERM scatteredSunlight := (3, 0) (5,1) (6,1) (7,0);
+    TERM directSunlight := (6, 0) (8, 1) (10, 1) ;
+END_FUZZIFY
+
+FUZZIFY waterChangeFrequency
+    TERM rare := (0, 1) (2, 1) (3, 0);
+    TERM average := (2, 0) (3,1) (4,1) (6,0);
+    TERM often := (5, 0) (6, 1) (7,1) ;
+END_FUZZIFY
+
+DEFUZZIFY bouquetFreshnessDuration
+    TERM short := (0,1) (3,1) (7,0);
+    TERM average := (5,0) (8,1) (14,1) (16,0);
+    TERM long := (14,0) (20,1) (21,1);
+
+    METHOD : COG; // Use 'Center Of Gravity' defuzzification method
+    DEFAULT := 0;     // Default value is 0 (if no rule activates defuzzifier)
+    RANGE := (0 .. 21); // Output variable interval
+END_DEFUZZIFY
+
+RULEBLOCK No1
+    AND : MIN; // Use 'min' for 'and' (also implicit use 'max' for 'or' to fulfill DeMorgan's Law)
+    ACT : PROD; // Use 'min' activation method
+    ACCU : MAX; // Use 'max' accumulation method
+
+   RULE 1 : IF temperature IS high AND airHumidity IS low AND sunlightBrightness IS directSunlight AND waterChangeFrequency IS rare
+            THEN bouquetFreshnessDuration IS short;
+
+   RULE 2 : IF (temperature IS low OR temperature IS average) AND airHumidity IS average AND sunlightBrightness IS scatteredSunlight AND waterChangeFrequency IS often
+            THEN bouquetFreshnessDuration IS long;
+
+   RULE 3 : IF temperature IS average AND airHumidity IS average AND sunlightBrightness IS scatteredSunlight AND waterChangeFrequency IS average
+             THEN bouquetFreshnessDuration IS average;
+
+   RULE 4 : IF sunlightBrightness IS scatteredSunlight AND airHumidity IS low
+            THEN bouquetFreshnessDuration is average;
+
+   RULE 5 : IF temperature IS low AND airHumidity IS average
+            THEN bouquetFreshnessDuration IS long;
+
+   RULE 6 : IF temperature IS high AND airHumidity IS low AND sunlightBrightness IS directSunlight AND waterChangeFrequency IS average
+           THEN bouquetFreshnessDuration IS short;
+
+   RULE 7 : IF temperature IS average AND airHumidity IS average AND sunlightBrightness IS darkness
+            THEN bouquetFreshnessDuration IS average;
+
+   RULE 8 : IF airHumidity IS high AND waterChangeFrequency IS average AND sunlightBrightness IS darkness
+             THEN bouquetFreshnessDuration IS average;
+
+   RULE 9 : IF airHumidity IS high AND waterChangeFrequency IS average AND sunlightBrightness IS scatteredSunlight
+             THEN bouquetFreshnessDuration IS long;
+
+   RULE 10 : IF airHumidity IS low AND waterChangeFrequency IS rare AND sunlightBrightness IS directSunlight
+             THEN bouquetFreshnessDuration IS short;
+
+   RULE 11 : IF temperature IS low AND waterChangeFrequency IS often AND sunlightBrightness IS darkness
+             THEN bouquetFreshnessDuration IS average;
+
+   RULE 12 : IF temperature IS average AND (waterChangeFrequency IS often OR airHumidity IS high)
+             THEN bouquetFreshnessDuration IS long;
+
+   RULE 13 : IF temperature IS high AND waterChangeFrequency IS rare AND sunlightBrightness IS directSunlight
+             THEN bouquetFreshnessDuration IS short;
+
+   RULE 14 : IF airHumidity IS high AND waterChangeFrequency IS rare AND sunlightBrightness IS directSunlight
+            THEN bouquetFreshnessDuration IS short;
+
+   RULE 15 : IF temperature IS low AND waterChangeFrequency IS average
+             THEN bouquetFreshnessDuration IS long;
+
+   RULE 16 : IF temperature IS high OR waterChangeFrequency IS rare
+            THEN bouquetFreshnessDuration IS short;
+
+   RULE 17 : IF (temperature IS low OR airHumidity IS high) AND waterChangeFrequency IS often
+             THEN bouquetFreshnessDuration IS long;
+
+  RULE 18 : IF waterChangeFrequency IS often THEN bouquetFreshnessDuration IS long;
+
+  RULE 19 : IF waterChangeFrequency IS average THEN bouquetFreshnessDuration IS average;
+
+  RULE 20 : IF waterChangeFrequency IS rare THEN bouquetFreshnessDuration IS short;
+
+  RULE 21 : IF temperature IS low THEN bouquetFreshnessDuration IS long;
+
+  RULE 22 : IF temperature IS average THEN bouquetFreshnessDuration IS average;
+
+  RULE 23 : IF temperature IS high THEN bouquetFreshnessDuration IS short;
+
+  RULE 24 : IF sunlightBrightness IS directSunlight THEN bouquetFreshnessDuration IS short;
+
+  RULE 25 : IF sunlightBrightness IS scatteredSunlight THEN bouquetFreshnessDuration IS long;
+
+  RULE 26 : IF sunlightBrightness IS darkness THEN bouquetFreshnessDuration IS short;
+
+   RULE 27 : IF airHumidity IS high THEN bouquetFreshnessDuration IS average;
+
+   RULE 28 : IF airHumidity IS average THEN bouquetFreshnessDuration IS long;
+
+   RULE 29 : IF airHumidity IS high OR waterChangeFrequency IS often THEN bouquetFreshnessDuration IS long;
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
